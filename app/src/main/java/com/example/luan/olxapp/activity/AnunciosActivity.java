@@ -317,17 +317,15 @@ public class AnunciosActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()){
-            case R.id.menu_cadastrar:
-                startActivity(new Intent(getApplicationContext(), CadastroActivity.class));
-                break;
-            case R.id.menu_sair:
-                auth.signOut();
-                invalidateOptionsMenu();
-                break;
-            case R.id.menu_anuncios:
-                startActivity(new Intent(getApplicationContext(), MeusAnunciosActivity.class));
-                break;
+        int id = item.getItemId();
+
+        if (id == R.id.menu_cadastrar) {
+            startActivity(new Intent(getApplicationContext(), CadastroActivity.class));
+        } else if (id == R.id.menu_sair) {
+            auth.signOut();
+            invalidateOptionsMenu();
+        } else if (id == R.id.menu_anuncios) {
+            startActivity(new Intent(getApplicationContext(), MeusAnunciosActivity.class));
         }
 
 

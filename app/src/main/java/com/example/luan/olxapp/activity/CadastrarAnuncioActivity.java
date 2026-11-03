@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
@@ -79,7 +80,10 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
         campoValor.setLocale(locale);
 
         //Validar Permissões
-        Permissoes.validarPermissoes(permissoes,this,1);
+        //(No Android 13+ o seletor de fotos não precisa de permissão)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            Permissoes.validarPermissoes(permissoes,this,1);
+        }
 
         storage = ConfiguracaoFirebase.getFirebaseStorage();
 
@@ -195,16 +199,14 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
 
     public void onClickImg(View v){
 
-        switch (v.getId()){
-            case R.id.img1:
-                escolherImg(1);
-                break;
-            case R.id.img2:
-                escolherImg(2);
-                break;
-            case R.id.img3:
-                escolherImg(3);
-                break;
+        int id = v.getId();
+
+        if (id == R.id.img1) {
+            escolherImg(1);
+        } else if (id == R.id.img2) {
+            escolherImg(2);
+        } else if (id == R.id.img3) {
+            escolherImg(3);
         }
     }
 

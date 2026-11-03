@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.luan.olxapp">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <application
         android:allowBackup="true"
@@ -13,22 +14,31 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.DetalhesProdutoActivity"
-            android:parentActivityName=".activity.AnunciosActivity"></activity>
-        <activity android:name=".activity.CadastrarAnuncioActivity" />
+        <activity
+            android:name=".activity.DetalhesProdutoActivity"
+            android:exported="false"
+            android:parentActivityName=".activity.AnunciosActivity" />
+        <activity
+            android:name=".activity.CadastrarAnuncioActivity"
+            android:exported="false" />
         <activity
             android:name=".activity.MeusAnunciosActivity"
+            android:exported="false"
             android:label="@string/title_activity_meus_anuncios"
             android:parentActivityName=".activity.AnunciosActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activity.AnunciosActivity">
+        <activity
+            android:name=".activity.AnunciosActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.CadastroActivity" />
+        <activity
+            android:name=".activity.CadastroActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
