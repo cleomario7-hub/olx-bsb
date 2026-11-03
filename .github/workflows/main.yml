@@ -9,32 +9,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Baixar o código
         uses: actions/checkout@v4
 
-      # O projeto usa Gradle 5.1.1 + Android Gradle Plugin 3.4.2,
-      # que só funcionam com Java 8 (não use 11 ou 17 aqui).
-      - name: Configurar JDK 8
+      - name: Configurar JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 8
+          java-version: 17
 
-      - name: Cache do Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
+      - name: Configurar Gradle (com cache)
+        uses: gradle/actions/setup-gradle@v4
 
-      # O google-services.json NÃO está no repositório (contém dados do seu Firebase).
-      # Salve o conteúdo dele em base64 no secret GOOGLE_SERVICES_JSON.
       - name: Criar google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
