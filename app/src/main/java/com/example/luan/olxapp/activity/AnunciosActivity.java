@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import dmax.dialog.SpotsDialog;
+import com.example.luan.olxapp.helper.ProgressoDialog;
 
 public class AnunciosActivity extends AppCompatActivity {
 
@@ -186,11 +186,7 @@ public class AnunciosActivity extends AppCompatActivity {
 
     private void recuperarAnunciosPorFiltroCategoria(){
 
-        dialog = new SpotsDialog.Builder()
-                .setContext(this)
-                .setMessage("Recuperando anúncios ")
-                .setCancelable(false)
-                .build();
+        dialog = ProgressoDialog.criar(this, "Recuperando anúncios ", false);
         dialog.show();
 
         anunciosPublicosRef = ConfiguracaoFirebase.getFirebase()
@@ -225,11 +221,7 @@ public class AnunciosActivity extends AppCompatActivity {
 
     private void recuperarAnunciosPorFiltroEstado(){
 
-        dialog = new SpotsDialog.Builder()
-                .setContext(this)
-                .setMessage("Recuperando anúncios")
-                .setCancelable(false)
-                .build();
+        dialog = ProgressoDialog.criar(this, "Recuperando anúncios", false);
         dialog.show();
 
         anunciosPublicosRef = ConfiguracaoFirebase.getFirebase()
@@ -261,11 +253,7 @@ public class AnunciosActivity extends AppCompatActivity {
 
     private void recuperarAnunciosPublicos(){
 
-        dialog = new SpotsDialog.Builder()
-                .setContext(this)
-                .setMessage("Recuperando anúncios")
-                .setCancelable(false)
-                .build();
+        dialog = ProgressoDialog.criar(this, "Recuperando anúncios", false);
         dialog.show();
 
         anuncioList.clear();

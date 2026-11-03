@@ -1,19 +1,14 @@
 package com.example.luan.olxapp.activity;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -25,7 +20,6 @@ import android.widget.Toast;
 import com.blackcat.currencyedittext.CurrencyEditText;
 import com.example.luan.olxapp.R;
 import com.example.luan.olxapp.helper.ConfiguracaoFirebase;
-import com.example.luan.olxapp.helper.Permissoes;
 import com.example.luan.olxapp.model.Anuncio;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -38,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.UUID;
 
-import dmax.dialog.SpotsDialog;
+import com.example.luan.olxapp.helper.ProgressoDialog;
 
 public class CadastrarAnuncioActivity extends AppCompatActivity {
 
@@ -51,12 +45,28 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
     private StorageReference storage;
     private AlertDialog dialog;
 
-    private String[] permissoes = new String[]{
-            Manifest.permission.READ_EXTERNAL_STORAGE
-    };
-
     private String[] fotosRecuperadas = new String[3];
     private ArrayList<String>listaURLFotos = new ArrayList<>();
+
+    // Qual foto (1, 2 ou 3) está sendo escolhida no momento
+    private int fotoSelecionando = 0;
+
+    // Seletor de fotos do sistema (não precisa de permissão de armazenamento)
+    private final ActivityResultLauncher<PickVisualMediaRequest> seletorFoto =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+                if (uri == null) return; // usuário cancelou
+
+                if (fotoSelecionando == 1) {
+                    img1.setImageURI(uri);
+                    fotosRecuperadas[0] = uri.toString();
+                } else if (fotoSelecionando == 2) {
+                    img2.setImageURI(uri);
+                    fotosRecuperadas[1] = uri.toString();
+                } else if (fotoSelecionando == 3) {
+                    img3.setImageURI(uri);
+                    fotosRecuperadas[2] = uri.toString();
+                }
+            });
 
 
     @Override
@@ -79,12 +89,6 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
         Locale locale = new Locale("pt","BR");
         campoValor.setLocale(locale);
 
-        //Validar Permissões
-        //(No Android 13+ o seletor de fotos não precisa de permissão)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            Permissoes.validarPermissoes(permissoes,this,1);
-        }
-
         storage = ConfiguracaoFirebase.getFirebaseStorage();
 
 
@@ -102,10 +106,7 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
 
     private void salvarAnuncio(final Anuncio anuncio){
 
-        dialog = new SpotsDialog.Builder()
-                .setContext(this)
-                .setMessage("Salvando Anúncio")
-                .build();
+        dialog = ProgressoDialog.criar(this, "Salvando Anúncio", true);
         dialog.show();
 
         /*
@@ -210,64 +211,11 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
         }
     }
 
-    public void escolherImg(int requestCode){
-        Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(i,requestCode);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        for (int permissaoResultado : grantResults){
-            if(permissaoResultado == PackageManager.PERMISSION_DENIED){
-                showAlertPermissao();
-            }
-        }
-    }
-
-    private void showAlertPermissao(){
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Permissões Negadas");
-        builder.setMessage("Para utilizar o app é necessário aceitar as permissões");
-        builder.setCancelable(false);
-        builder.setPositiveButton("Confirmar", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == Activity.RESULT_OK){
-
-            //Recuperar Imagem
-            Uri imagemSelecionada = data.getData();
-            String caminhoImagem = imagemSelecionada.toString();
-
-            //Configura imagem no ImageView
-            if(requestCode == 1){
-                img1.setImageURI(imagemSelecionada);
-                //listaFotosRecuperadas.add(caminhoImagem);
-                fotosRecuperadas[0] = caminhoImagem;
-            }else if( requestCode == 2){
-                img2.setImageURI(imagemSelecionada);
-                fotosRecuperadas[1] = caminhoImagem;
-            }else if(requestCode == 3){
-                img3.setImageURI(imagemSelecionada);
-                fotosRecuperadas[2] = caminhoImagem;
-            }
-
-            //listaFotosRecuperadas.add(caminhoImagem);
-        }
+    public void escolherImg(int numeroFoto){
+        fotoSelecionando = numeroFoto;
+        seletorFoto.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
     private void carregarDadosSpinner(){

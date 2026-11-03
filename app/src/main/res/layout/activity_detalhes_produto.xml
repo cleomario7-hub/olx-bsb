@@ -7,16 +7,28 @@
     android:orientation="vertical"
     tools:context=".activity.DetalhesProdutoActivity">
 
-    <com.synnapps.carouselview.CarouselView
-        android:id="@+id/carouselView"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        app:fillColor="#FFFFFFFF"
-        app:pageColor="#00000000"
-        app:radius="6dp"
-        app:slideInterval="3000"
-        app:strokeColor="#FF777777"
-        app:strokeWidth="1dp" />
+        android:layout_height="200dp">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPagerFotos"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabIndicadorFotos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@android:color/transparent"
+            app:tabBackground="@drawable/dot_selector"
+            app:tabGravity="center"
+            app:tabIndicatorHeight="0dp"
+            app:tabMinWidth="0dp"
+            app:tabPaddingEnd="6dp"
+            app:tabPaddingStart="6dp" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/textTituloDetalhe"

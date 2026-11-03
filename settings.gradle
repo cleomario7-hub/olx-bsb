@@ -12,14 +12,6 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        // O JCenter foi desativado (somente leitura). Só é usado como último recurso
-        // para as bibliotecas antigas que nunca foram migradas para o Maven Central.
-        jcenter {
-            content {
-                includeGroup 'com.synnapps'
-                includeGroup 'com.github.d-max'
-            }
-        }
     }
 }
 

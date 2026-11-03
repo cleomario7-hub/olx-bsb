@@ -1,24 +1,43 @@
 package com.example.luan.olxapp.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.luan.olxapp.R;
 import com.example.luan.olxapp.model.Anuncio;
-import com.squareup.picasso.Picasso;
-import com.synnapps.carouselview.CarouselView;
-import com.synnapps.carouselview.ImageListener;
+import com.example.luan.olxapp.adapter.AdapterFotos;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class DetalhesProdutoActivity extends AppCompatActivity {
 
-    private CarouselView carouselView;
+    private static final long INTERVALO_SLIDE_MS = 3000;
+
+    private ViewPager2 viewPagerFotos;
+    private TabLayout tabIndicadorFotos;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable proximaFoto = new Runnable() {
+        @Override
+        public void run() {
+            RecyclerView.Adapter<?> adapter = viewPagerFotos.getAdapter();
+            if (adapter != null && adapter.getItemCount() > 1) {
+                int proxima = (viewPagerFotos.getCurrentItem() + 1) % adapter.getItemCount();
+                viewPagerFotos.setCurrentItem(proxima, true);
+                handler.postDelayed(this, INTERVALO_SLIDE_MS);
+            }
+        }
+    };
     private TextView titulo, descricao, estado,preco;
     private Anuncio anuncioSelecionado;
 
@@ -29,7 +48,8 @@ public class DetalhesProdutoActivity extends AppCompatActivity {
 
         getSupportActionBar().setTitle("Detalhe produto");
 
-        carouselView = findViewById(R.id.carouselView);
+        viewPagerFotos = findViewById(R.id.viewPagerFotos);
+        tabIndicadorFotos = findViewById(R.id.tabIndicadorFotos);
         titulo = findViewById(R.id.textTituloDetalhe);
         descricao = findViewById(R.id.textDescricaoDetalhe);
         estado = findViewById(R.id.textEstadoDetalhe);
@@ -45,16 +65,10 @@ public class DetalhesProdutoActivity extends AppCompatActivity {
             preco.setText(anuncioSelecionado.getValor());
         }
 
-        ImageListener imageListener = new ImageListener() {
-            @Override
-            public void setImageForPosition(int position, ImageView imageView) {
-                String urlString = anuncioSelecionado.getFotos().get(position);
-                Picasso.get().load(urlString).into(imageView);
-            }
-        };
-
-        carouselView.setPageCount(anuncioSelecionado.getFotos().size());
-        carouselView.setImageListener(imageListener);
+        if (anuncioSelecionado != null && anuncioSelecionado.getFotos() != null) {
+            viewPagerFotos.setAdapter(new AdapterFotos(anuncioSelecionado.getFotos()));
+            new TabLayoutMediator(tabIndicadorFotos, viewPagerFotos, (tab, position) -> { }).attach();
+        }
 
         Button btnVerTelefone = findViewById(R.id.btnVerTelefone);
         btnVerTelefone.setOnClickListener(new View.OnClickListener() {
@@ -68,5 +82,17 @@ public class DetalhesProdutoActivity extends AppCompatActivity {
     private void visualizarTelefone(){
         Intent i = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", anuncioSelecionado.getTelefone(), null));
         startActivity(i);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        handler.postDelayed(proximaFoto, INTERVALO_SLIDE_MS);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacks(proximaFoto);
     }
 }

@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import dmax.dialog.SpotsDialog;
+import com.example.luan.olxapp.helper.ProgressoDialog;
 
 public class MeusAnunciosActivity extends AppCompatActivity {
 
@@ -108,10 +108,7 @@ public class MeusAnunciosActivity extends AppCompatActivity {
 
     private void recuperarAnuncios(){
 
-        dialog = new SpotsDialog.Builder()
-                .setContext(this)
-                .setMessage("Recuperando Anúncio")
-                .build();
+        dialog = ProgressoDialog.criar(this, "Recuperando Anúncio", true);
         dialog.show();
 
         anuncioUsuarioRef.addValueEventListener(new ValueEventListener() {
