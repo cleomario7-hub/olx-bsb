@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 import com.example.luan.olxapp.helper.ProgressoDialog;
+import com.example.luan.olxapp.helper.Recursos;
 
 public class CadastrarAnuncioActivity extends AppCompatActivity {
 
@@ -78,6 +79,11 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
         img2 = findViewById(R.id.img2);
         img3 = findViewById(R.id.img3);
 
+        //Sem Storage ativo, esconde a escolha de fotos
+        if (!Recursos.FOTOS_ATIVAS) {
+            ((View) img1.getParent()).setVisibility(View.GONE);
+        }
+
         spUF = findViewById(R.id.spUF);
         spCategoria = findViewById(R.id.spCategoria);
         campoTitulo = findViewById(R.id.editTitulo);
@@ -109,10 +115,26 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
         dialog = ProgressoDialog.criar(this, "Salvando Anúncio", true);
         dialog.show();
 
+        listaURLFotos.clear();
+
+        //Fotos escolhidas (só valem se o recurso de fotos estiver ativo)
+        final ArrayList<String> fotosParaEnviar = new ArrayList<>();
+        if (Recursos.FOTOS_ATIVAS) {
+            for (String foto : fotosRecuperadas) {
+                if (foto != null) fotosParaEnviar.add(foto);
+            }
+        }
+
+        //Sem fotos: salva direto
+        if (fotosParaEnviar.isEmpty()) {
+            finalizarCadastro(anuncio);
+            return;
+        }
+
         /*
-         *Salvar imagem no Storage
+         *Salvar imagens no Storage
          */
-        for (int i = 0; i < fotosRecuperadas.length; i++) {
+        for (int i = 0; i < fotosParaEnviar.size(); i++) {
 
             final StorageReference imagemAnuncio = storage.child("imagens")
                     .child("anuncios")
@@ -120,9 +142,9 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
                     .child("Imagem" + i);
 
             //Fazer upload do arquivo
-            UploadTask uploadTask = imagemAnuncio.putFile( Uri.parse(fotosRecuperadas[i]));
+            UploadTask uploadTask = imagemAnuncio.putFile( Uri.parse(fotosParaEnviar.get(i)));
 
-            Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
                     if (!task.isSuccessful()){
@@ -135,21 +157,28 @@ public class CadastrarAnuncioActivity extends AppCompatActivity {
                 public void onSuccess(Uri uri) {
                     listaURLFotos.add(uri.toString());
 
-                    if(listaURLFotos.size() == fotosRecuperadas.length){
+                    if(listaURLFotos.size() == fotosParaEnviar.size()){
                         anuncio.setFotos(listaURLFotos);
-                        anuncio.salvar();
-                        dialog.dismiss();
-                        Toast.makeText(CadastrarAnuncioActivity.this,"Anúncio Cadastrado",Toast.LENGTH_SHORT).show();
-                        finish();
+                        finalizarCadastro(anuncio);
                     }
                 }
+            }).addOnFailureListener(e -> {
+                dialog.dismiss();
+                showToast("Não foi possível enviar as fotos. Tente novamente.");
             });
         }
     }
 
+    private void finalizarCadastro(Anuncio anuncio){
+        anuncio.salvar();
+        dialog.dismiss();
+        Toast.makeText(CadastrarAnuncioActivity.this,"Anúncio Cadastrado",Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
     private void validarDadosAnuncio(){
 
-        if(fotosRecuperadas[0] != null || fotosRecuperadas[1] != null || fotosRecuperadas[2] != null){
+        if(!Recursos.FOTOS_ATIVAS || fotosRecuperadas[0] != null || fotosRecuperadas[1] != null || fotosRecuperadas[2] != null){
             String fone = "";
 
             String estado = spUF.getSelectedItem().toString();

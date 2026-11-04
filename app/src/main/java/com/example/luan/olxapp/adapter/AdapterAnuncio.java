@@ -43,9 +43,12 @@ public class AdapterAnuncio extends RecyclerView.Adapter<AdapterAnuncio.MyViewHo
 
         //Pega a primeira imagem da lista
         List<String> urlFotos = anuncio.getFotos();
-        String urlCapa = urlFotos.get(0);
-
-        Picasso.get().load(urlCapa).into(holder.foto);
+        if (urlFotos != null && !urlFotos.isEmpty()) {
+            Picasso.get().load(urlFotos.get(0)).into(holder.foto);
+        } else {
+            //Anúncio sem foto: mostra a imagem padrão
+            holder.foto.setImageResource(R.drawable.padrao);
+        }
     }
 
     @Override

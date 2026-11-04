@@ -65,9 +65,13 @@ public class DetalhesProdutoActivity extends AppCompatActivity {
             preco.setText(anuncioSelecionado.getValor());
         }
 
-        if (anuncioSelecionado != null && anuncioSelecionado.getFotos() != null) {
+        if (anuncioSelecionado != null && anuncioSelecionado.getFotos() != null
+                && !anuncioSelecionado.getFotos().isEmpty()) {
             viewPagerFotos.setAdapter(new AdapterFotos(anuncioSelecionado.getFotos()));
             new TabLayoutMediator(tabIndicadorFotos, viewPagerFotos, (tab, position) -> { }).attach();
+        } else {
+            //Anúncio sem foto: esconde o slide
+            findViewById(R.id.containerFotos).setVisibility(View.GONE);
         }
 
         Button btnVerTelefone = findViewById(R.id.btnVerTelefone);

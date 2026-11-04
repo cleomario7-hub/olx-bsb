@@ -96,6 +96,7 @@ public class Anuncio implements Serializable {
     public void removeFotosStorage(){
 
         List<String> listaDeFotos = this.getFotos();
+        if (listaDeFotos == null) return; //anúncio sem fotos
         for(int i = 0; i < listaDeFotos.size(); i++){
 
             StorageReference storageReference = FirebaseStorage.getInstance().getReference();
