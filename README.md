@@ -1,4 +1,4 @@
-# OLX APP
+# LX
 
 Desenvolvimento do aplicativo parecido com OLX, utilizando conceitos estudados durante o curso de "Desenvolvimento Android" - Udemy - Jamilton Damasceno.
 
