@@ -40,11 +40,12 @@ public class AdapterAnuncio extends RecyclerView.Adapter<AdapterAnuncio.MyViewHo
         Anuncio anuncio = anuncios.get(position);
         holder.titulo.setText(anuncio.getTitulo());
         holder.valor.setText(anuncio.getValor());
+        holder.local.setText(anuncio.getEstado() + " · " + anuncio.getCategoria());
 
         //Pega a primeira imagem da lista
         List<String> urlFotos = anuncio.getFotos();
         if (urlFotos != null && !urlFotos.isEmpty()) {
-            Picasso.get().load(urlFotos.get(0)).into(holder.foto);
+            Picasso.get().load(urlFotos.get(0)).placeholder(R.drawable.padrao).fit().centerCrop().into(holder.foto);
         } else {
             //Anúncio sem foto: mostra a imagem padrão
             holder.foto.setImageResource(R.drawable.padrao);
@@ -60,6 +61,7 @@ public class AdapterAnuncio extends RecyclerView.Adapter<AdapterAnuncio.MyViewHo
 
         TextView titulo;
         TextView valor;
+        TextView local;
         ImageView foto;
 
 
@@ -69,6 +71,7 @@ public class AdapterAnuncio extends RecyclerView.Adapter<AdapterAnuncio.MyViewHo
             titulo = itemView.findViewById(R.id.textTitulo);
             valor = itemView.findViewById(R.id.textValor);
             foto = itemView.findViewById(R.id.imageAnuncio);
+            local = itemView.findViewById(R.id.textLocal);
 
         }
     }
