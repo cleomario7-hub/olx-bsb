@@ -76,17 +76,12 @@ public class MeusAnunciosActivity extends AppCompatActivity {
                 new RecyclerItemClickListener(this, recyclerAnuncios, new RecyclerItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
-
+                        mostrarOpcoes(anuncioList.get(position));
                     }
 
                     @Override
                     public void onLongItemClick(View view, int position) {
-                        Anuncio anuncioSelecionado = anuncioList.get(position);
-
-                        anuncioSelecionado.remover();
-
-                        adapterAnuncio.notifyDataSetChanged();
-                        Toast.makeText(MeusAnunciosActivity.this, "Anuncio Excluido", Toast.LENGTH_SHORT).show();
+                        mostrarOpcoes(anuncioList.get(position));
                     }
 
                     @Override
@@ -104,6 +99,41 @@ public class MeusAnunciosActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), CadastrarAnuncioActivity.class));
             }
         });
+    }
+
+    private void mostrarOpcoes(final Anuncio anuncio) {
+        String[] opcoes = {
+                anuncio.isVendido() ? "Marcar como disponível" : "Marcar como vendido",
+                "Excluir anúncio"
+        };
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(anuncio.getTitulo())
+                .setItems(opcoes, new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface d, int which) {
+                        if (which == 0) {
+                            anuncio.alternarVendido();
+                        } else {
+                            confirmarExclusao(anuncio);
+                        }
+                    }
+                })
+                .show();
+    }
+
+    private void confirmarExclusao(final Anuncio anuncio) {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Excluir anúncio?")
+                .setMessage("Essa ação não pode ser desfeita.")
+                .setPositiveButton("Excluir", new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(android.content.DialogInterface d, int which) {
+                        anuncio.remover();
+                        Toast.makeText(MeusAnunciosActivity.this, "Anúncio excluído", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     private void recuperarAnuncios(){

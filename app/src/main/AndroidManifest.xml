@@ -11,6 +11,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".activity.FavoritosActivity" android:exported="false" />
+        <activity android:name=".activity.ConversasActivity" android:exported="false" />
+        <activity android:name=".activity.ContaActivity" android:exported="false" />
+        <activity
+            android:name=".activity.ChatActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity.DetalhesProdutoActivity"
             android:exported="false"

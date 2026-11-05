@@ -25,6 +25,9 @@ public class Anuncio implements Serializable {
     private String telefone;
     private String descricao;
     private List<String> fotos;
+    private String idUsuario;       // dono do anúncio (usado pelo chat)
+    private boolean vendido;
+    private long dataPublicacao;
 
     public Anuncio() {
     }
@@ -39,6 +42,19 @@ public class Anuncio implements Serializable {
         this.valor = valor;
         this.telefone = telefone;
         this.descricao = descricao;
+        if (ConfiguracaoFirebase.getFirebaseAutenticacao().getCurrentUser() != null) {
+            this.idUsuario = ConfiguracaoFirebase.getIdUsuario();
+        }
+        this.dataPublicacao = System.currentTimeMillis();
+    }
+
+    /** Marca como vendido (ou volta a disponível) nas duas cópias do anúncio. */
+    public void alternarVendido(){
+        this.vendido = !this.vendido;
+        java.util.Map<String, Object> mudanca = new java.util.HashMap<>();
+        mudanca.put("meus_anuncios/" + ConfiguracaoFirebase.getIdUsuario() + "/" + idAnuncio + "/vendido", vendido);
+        mudanca.put("anuncios/" + estado + "/" + categoria + "/" + idAnuncio + "/vendido", vendido);
+        ConfiguracaoFirebase.getFirebase().updateChildren(mudanca);
     }
 
     public void salvar(){
@@ -179,6 +195,18 @@ public class Anuncio implements Serializable {
     public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
+
+    public String getIdUsuario() { return idUsuario; }
+
+    public void setIdUsuario(String idUsuario) { this.idUsuario = idUsuario; }
+
+    public boolean isVendido() { return vendido; }
+
+    public void setVendido(boolean vendido) { this.vendido = vendido; }
+
+    public long getDataPublicacao() { return dataPublicacao; }
+
+    public void setDataPublicacao(long dataPublicacao) { this.dataPublicacao = dataPublicacao; }
 
     public List<String> getFotos() {
         return fotos;

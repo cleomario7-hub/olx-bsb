@@ -14,7 +14,6 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,10 +21,12 @@ import android.widget.Toast;
 import com.example.luan.olxapp.R;
 import com.example.luan.olxapp.adapter.AdapterAnuncio;
 import com.example.luan.olxapp.helper.ConfiguracaoFirebase;
-import com.example.luan.olxapp.helper.RecyclerItemClickListener;
+import com.example.luan.olxapp.helper.FavoritosHelper;
+import com.example.luan.olxapp.helper.NavegacaoInferior;
+import com.example.luan.olxapp.helper.Precos;
 import com.example.luan.olxapp.model.Anuncio;
 import com.google.android.material.chip.Chip;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,8 +36,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class AnunciosActivity extends AppCompatActivity {
 
@@ -45,7 +49,7 @@ public class AnunciosActivity extends AppCompatActivity {
     private AdapterAnuncio adapterAnuncio;
     private EditText editBusca;
     private TextView textVazio;
-    private Chip chipRegiao, chipCategoria;
+    private Chip chipRegiao, chipCategoria, chipPreco, chipOrdenar;
 
     // todos = tudo que veio do Firebase | anuncioList = o que está na tela (já filtrado)
     private final List<Anuncio> todosAnuncios = new ArrayList<>();
@@ -57,6 +61,12 @@ public class AnunciosActivity extends AppCompatActivity {
     private String filtroEstado = null;     // null = todas as regiões
     private String filtroCategoria = null;  // null = todas as categorias
     private String filtroTexto = "";
+    private long precoMin = -1, precoMax = -1; // em centavos; -1 = sem limite
+    private int ordem = 0;                      // 0 recentes, 1 menor preço, 2 maior preço
+
+    private final Set<String> favoritos = new HashSet<>();
+    private ValueEventListener favoritosListener;
+    private DatabaseReference favoritosRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +81,9 @@ public class AnunciosActivity extends AppCompatActivity {
         textVazio = findViewById(R.id.textVazio);
         chipRegiao = findViewById(R.id.chipRegiao);
         chipCategoria = findViewById(R.id.chipCategoria);
-        FloatingActionButton fabAnunciar = findViewById(R.id.fabAnunciar);
+        chipPreco = findViewById(R.id.chipPreco);
+        chipOrdenar = findViewById(R.id.chipOrdenar);
+        NavegacaoInferior.configurar(this, (BottomNavigationView) findViewById(R.id.bottomNav), R.id.nav_inicio);
 
         recyclerAnunciosPublicos.setLayoutManager(new GridLayoutManager(this, 2));
         adapterAnuncio = new AdapterAnuncio(anuncioList, this);
@@ -79,26 +91,20 @@ public class AnunciosActivity extends AppCompatActivity {
 
         recuperarAnunciosPublicos();
 
-        // Clique no anúncio (a posição é da lista filtrada, que é a que está na tela)
-        recyclerAnunciosPublicos.addOnItemTouchListener(
-                new RecyclerItemClickListener(this, recyclerAnunciosPublicos, new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        Anuncio anuncioSelecionado = anuncioList.get(position);
-                        Intent i = new Intent(AnunciosActivity.this, DetalhesProdutoActivity.class);
-                        i.putExtra("anuncioSelecionado", anuncioSelecionado);
-                        startActivity(i);
-                    }
+        // Cliques do card: abrir detalhes e favoritar (coração)
+        adapterAnuncio.setListener(new AdapterAnuncio.Listener() {
+            @Override
+            public void onAnuncioClick(Anuncio anuncio) {
+                Intent i = new Intent(AnunciosActivity.this, DetalhesProdutoActivity.class);
+                i.putExtra("anuncioSelecionado", anuncio);
+                startActivity(i);
+            }
 
-                    @Override
-                    public void onLongItemClick(View view, int position) {
-                    }
-
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    }
-                })
-        );
+            @Override
+            public void onFavoritoClick(Anuncio anuncio) {
+                FavoritosHelper.alternar(AnunciosActivity.this, anuncio, favoritos);
+            }
+        });
 
         // Busca por texto enquanto digita
         editBusca.addTextChangedListener(new TextWatcher() {
@@ -162,19 +168,80 @@ public class AnunciosActivity extends AppCompatActivity {
             }
         });
 
-        // Botão "Anunciar": logado vai para o cadastro de anúncio, deslogado vai para o login
-        fabAnunciar.setOnClickListener(new View.OnClickListener() {
+        chipPreco.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (auth.getCurrentUser() == null) {
-                    Toast.makeText(AnunciosActivity.this,
-                            "Entre na sua conta para anunciar", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(getApplicationContext(), CadastroActivity.class));
-                } else {
-                    startActivity(new Intent(getApplicationContext(), CadastrarAnuncioActivity.class));
-                }
+                mostrarFiltroPreco();
             }
         });
+        chipPreco.setOnCloseIconClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                precoMin = -1;
+                precoMax = -1;
+                atualizarChip(chipPreco, "Preço", null);
+                aplicarFiltros();
+            }
+        });
+
+        chipOrdenar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final String[] opcoes = {"Mais recentes", "Menor preço", "Maior preço"};
+                new AlertDialog.Builder(AnunciosActivity.this)
+                        .setTitle("Ordenar por")
+                        .setItems(opcoes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ordem = which;
+                                chipOrdenar.setText(opcoes[which]);
+                                aplicarFiltros();
+                            }
+                        })
+                        .show();
+            }
+        });
+    }
+
+    private void mostrarFiltroPreco() {
+        android.widget.LinearLayout caixa = new android.widget.LinearLayout(this);
+        caixa.setOrientation(android.widget.LinearLayout.VERTICAL);
+        int p = (int) (20 * getResources().getDisplayMetrics().density);
+        caixa.setPadding(p, p / 2, p, 0);
+
+        final EditText min = new EditText(this);
+        min.setHint("Preço mínimo (R$)");
+        min.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        final EditText max = new EditText(this);
+        max.setHint("Preço máximo (R$)");
+        max.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        if (precoMin >= 0) min.setText(String.valueOf(precoMin / 100));
+        if (precoMax >= 0) max.setText(String.valueOf(precoMax / 100));
+        caixa.addView(min);
+        caixa.addView(max);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Faixa de preço")
+                .setView(caixa)
+                .setPositiveButton("Aplicar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String a = min.getText().toString().trim();
+                        String b = max.getText().toString().trim();
+                        precoMin = a.isEmpty() ? -1 : Precos.centavos(a) * 100;
+                        precoMax = b.isEmpty() ? -1 : Precos.centavos(b) * 100;
+                        if (precoMin < 0 && precoMax < 0) {
+                            atualizarChip(chipPreco, "Preço", null);
+                        } else {
+                            String txt = (precoMin >= 0 ? "R$ " + (precoMin / 100) : "R$ 0")
+                                    + " – " + (precoMax >= 0 ? "R$ " + (precoMax / 100) : "sem limite");
+                            atualizarChip(chipPreco, "Preço", txt);
+                        }
+                        aplicarFiltros();
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     private interface Escolha {
@@ -223,7 +290,26 @@ public class AnunciosActivity extends AppCompatActivity {
                 String texto = normalizar(a.getTitulo()) + " " + normalizar(a.getDescricao());
                 if (!texto.contains(busca)) continue;
             }
+            long preco = Precos.centavos(a.getValor());
+            if (precoMin >= 0 && preco < precoMin) continue;
+            if (precoMax >= 0 && preco > precoMax) continue;
             anuncioList.add(a);
+        }
+
+        if (ordem == 1) {
+            Collections.sort(anuncioList, new Comparator<Anuncio>() {
+                @Override
+                public int compare(Anuncio x, Anuncio y) {
+                    return Long.compare(Precos.centavos(x.getValor()), Precos.centavos(y.getValor()));
+                }
+            });
+        } else if (ordem == 2) {
+            Collections.sort(anuncioList, new Comparator<Anuncio>() {
+                @Override
+                public int compare(Anuncio x, Anuncio y) {
+                    return Long.compare(Precos.centavos(y.getValor()), Precos.centavos(x.getValor()));
+                }
+            });
         }
 
         adapterAnuncio.notifyDataSetChanged();
@@ -272,6 +358,40 @@ public class AnunciosActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         invalidateOptionsMenu(); // atualiza o menu após login/logout
+        ouvirFavoritos();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (favoritosListener != null && favoritosRef != null) {
+            favoritosRef.removeEventListener(favoritosListener);
+            favoritosListener = null;
+        }
+    }
+
+    private void ouvirFavoritos() {
+        favoritos.clear();
+        if (!NavegacaoInferior.logado()) {
+            adapterAnuncio.setFavoritos(favoritos);
+            return;
+        }
+        favoritosRef = FavoritosHelper.referencia();
+        favoritosListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                favoritos.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    if (ds.getKey() != null) favoritos.add(ds.getKey());
+                }
+                adapterAnuncio.setFavoritos(favoritos);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        };
+        favoritosRef.addValueEventListener(favoritosListener);
     }
 
     @Override

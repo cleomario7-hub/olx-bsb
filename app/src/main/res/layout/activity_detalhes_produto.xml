@@ -94,4 +94,13 @@
         android:text="Ver telefone"
         android:theme="@style/botaoPadrao" />
 
+    <Button
+        android:id="@+id/btnConversar"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:text="Conversar com o vendedor" />
+
 </LinearLayout>

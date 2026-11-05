@@ -12,13 +12,46 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/imageAnuncio"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:contentDescription="Foto do anúncio"
-            android:scaleType="centerCrop"
-            app:srcCompat="@drawable/padrao" />
+            android:layout_height="140dp">
+
+            <ImageView
+                android:id="@+id/imageAnuncio"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Foto do anúncio"
+                android:scaleType="centerCrop"
+                app:srcCompat="@drawable/padrao" />
+
+            <TextView
+                android:id="@+id/textVendido"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:background="@drawable/bg_badge_vendido"
+                android:paddingStart="8dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="2dp"
+                android:text="VENDIDO"
+                android:textColor="@android:color/white"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/imageFavorito"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="6dp"
+                android:background="@drawable/bg_circulo_branco"
+                android:contentDescription="Favoritar"
+                android:padding="7dp"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_favorite_border_24dp" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

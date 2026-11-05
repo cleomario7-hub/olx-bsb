@@ -54,12 +54,29 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="Categoria" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPreco"
+                    style="@style/Widget.MaterialComponents.Chip.Action"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Preço" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipOrdenar"
+                    style="@style/Widget.MaterialComponents.Chip.Action"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Mais recentes" />
             </LinearLayout>
         </HorizontalScrollView>
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerAnunciosPublicos"
@@ -79,12 +96,4 @@
         </FrameLayout>
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAnunciar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:contentDescription="Anunciar"
-        app:srcCompat="@drawable/ic_add_branco_24dp" />
 </FrameLayout>

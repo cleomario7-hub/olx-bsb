@@ -15,7 +15,10 @@ import android.widget.TextView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.luan.olxapp.R;
+import com.example.luan.olxapp.helper.ConfiguracaoFirebase;
+import com.example.luan.olxapp.helper.NavegacaoInferior;
 import com.example.luan.olxapp.model.Anuncio;
+import android.widget.Toast;
 import com.example.luan.olxapp.adapter.AdapterFotos;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -59,7 +62,7 @@ public class DetalhesProdutoActivity extends AppCompatActivity {
         anuncioSelecionado = (Anuncio) getIntent().getSerializableExtra("anuncioSelecionado");
 
         if(anuncioSelecionado != null){
-            titulo.setText(anuncioSelecionado.getTitulo());
+            titulo.setText((anuncioSelecionado.isVendido() ? "[VENDIDO] " : "") + anuncioSelecionado.getTitulo());
             descricao.setText(anuncioSelecionado.getDescricao());
             estado.setText(anuncioSelecionado.getEstado());
             preco.setText(anuncioSelecionado.getValor());
@@ -75,12 +78,42 @@ public class DetalhesProdutoActivity extends AppCompatActivity {
         }
 
         Button btnVerTelefone = findViewById(R.id.btnVerTelefone);
+        findViewById(R.id.btnConversar).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                abrirChat();
+            }
+        });
         btnVerTelefone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 visualizarTelefone();
             }
         });
+    }
+
+    private void abrirChat(){
+        if (anuncioSelecionado == null) return;
+        if (!NavegacaoInferior.logado()) {
+            NavegacaoInferior.pedirLogin(this, "Entre na sua conta para conversar");
+            return;
+        }
+        String dono = anuncioSelecionado.getIdUsuario();
+        if (dono == null || anuncioSelecionado.getIdAnuncio() == null) {
+            Toast.makeText(this, "Este anúncio é antigo e ainda não permite chat", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String eu = ConfiguracaoFirebase.getIdUsuario();
+        if (dono.equals(eu)) {
+            Toast.makeText(this, "Este é o seu anúncio", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent i = new Intent(this, ChatActivity.class);
+        i.putExtra("chatId", anuncioSelecionado.getIdAnuncio() + "_" + eu); // um chat por anúncio e comprador
+        i.putExtra("outroId", dono);
+        i.putExtra("idAnuncio", anuncioSelecionado.getIdAnuncio());
+        i.putExtra("tituloAnuncio", anuncioSelecionado.getTitulo());
+        startActivity(i);
     }
 
     private void visualizarTelefone(){
