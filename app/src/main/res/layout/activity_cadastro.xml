@@ -1,75 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:layout_margin="16dp"
+    android:fillViewport="true"
     tools:context=".activity.CadastroActivity">
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="200dp"
-        android:layout_height="150dp"
-        android:layout_marginBottom="20dp"
-        app:srcCompat="@drawable/logo" />
-
-    <EditText
-        android:id="@+id/editEmail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_edit_text"
-        android:ems="10"
-        android:hint="@string/email"
-        android:inputType="textEmailAddress"
-        android:padding="10dp" />
-
-    <EditText
-        android:id="@+id/editSenha"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="-2dp"
-        android:background="@drawable/bg_edit_text"
-        android:ems="10"
-        android:hint="@string/senha"
-        android:inputType="textPassword"
-        android:padding="10dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="16dp"
+            android:contentDescription="Logo LX"
+            app:srcCompat="@drawable/logo" />
 
         <TextView
-            android:id="@+id/textView"
+            android:id="@+id/textTitulo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/logar" />
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="20dp"
+            android:text="Entrar na sua conta"
+            android:textColor="@android:color/black"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-        <Switch
-            android:id="@+id/switchAcesso"
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/editNome"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp" />
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_edit_text"
+            android:hint="Nome completo"
+            android:importantForAutofill="no"
+            android:inputType="textPersonName|textCapWords"
+            android:padding="12dp"
+            android:visibility="gone" />
+
+        <com.santalu.maskedittext.MaskEditText
+            android:id="@+id/editTelefone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_edit_text"
+            android:hint="Telefone"
+            android:importantForAutofill="no"
+            android:inputType="phone"
+            android:padding="12dp"
+            android:visibility="gone"
+            app:met_mask="(##) #####-####" />
+
+        <EditText
+            android:id="@+id/editEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_edit_text"
+            android:hint="@string/email"
+            android:importantForAutofill="no"
+            android:inputType="textEmailAddress"
+            android:padding="12dp" />
+
+        <EditText
+            android:id="@+id/editSenha"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_edit_text"
+            android:hint="@string/senha"
+            android:importantForAutofill="no"
+            android:inputType="textPassword"
+            android:padding="12dp" />
+
+        <EditText
+            android:id="@+id/editConfirmarSenha"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_edit_text"
+            android:hint="Confirmar senha"
+            android:importantForAutofill="no"
+            android:inputType="textPassword"
+            android:padding="12dp"
+            android:visibility="gone" />
 
         <TextView
+            android:id="@+id/textEsqueciSenha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/cadastre_se" />
+            android:layout_gravity="end"
+            android:padding="6dp"
+            android:text="Esqueci minha senha"
+            android:textColor="@color/colorPrimary" />
+
+        <Button
+            android:id="@+id/btnAcessar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:padding="16dp"
+            android:text="Entrar"
+            android:theme="@style/botaoPadrao" />
+
+        <TextView
+            android:id="@+id/textAlternar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:padding="8dp"
+            android:text="Ainda não tem conta? Cadastre-se"
+            android:textColor="@color/colorPrimary"
+            android:textStyle="bold" />
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnAcessar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="@string/acessar"
-        android:theme="@style/botaoPadrao" />
-
-</LinearLayout>
+</ScrollView>
